@@ -1,4 +1,6 @@
 server:
+  # Railway private network требует прослушивание IPv6
+  address: "::"
   port: ${PORT:8080}
 
 spring:
