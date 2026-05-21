@@ -10,10 +10,11 @@ import { Song } from '../../core/models';
   imports: [CommonModule, FormsModule],
   styleUrls: ['../../shared/split-page.css'],
   template: `
-    <div class="split-page">
+    <div class="split-page" [class.has-selection]="!!selected()">
       <section class="main-pane">
         <ng-container *ngIf="selected() as s; else emptyTpl">
           <div class="toolbar">
+            <button type="button" class="mobile-back secondary" (click)="clearSelection()">← Список</button>
             <button *ngIf="!editing()" (click)="startEdit()">Редактировать</button>
             <button *ngIf="editing()" (click)="save()">Сохранить</button>
             <button *ngIf="editing()" class="secondary" (click)="cancelEdit()">Отмена</button>
@@ -36,12 +37,20 @@ import { Song } from '../../core/models';
             </label>
           </div>
 
-          <textarea *ngIf="editing()" class="body-editor" [(ngModel)]="draft.body"
-                    placeholder="Текст и аккорды (моноширинный шрифт)"></textarea>
-          <pre *ngIf="!editing()" class="body-view">{{ s.body }}</pre>
+          <div class="body-area">
+            <textarea
+              *ngIf="editing()"
+              class="body-editor"
+              [(ngModel)]="draft.body"
+              placeholder="Текст и аккорды (моноширинный шрифт)"></textarea>
+            <pre *ngIf="!editing()" class="body-view">{{ s.body }}</pre>
+          </div>
         </ng-container>
         <ng-template #emptyTpl>
-          <div class="empty">Выберите песню или создайте новую →</div>
+          <div class="empty">
+            <span class="empty-hint-desktop">Выберите песню или создайте новую →</span>
+            <span class="empty-hint-mobile">Выберите песню из списка</span>
+          </div>
         </ng-template>
       </section>
 
@@ -90,6 +99,12 @@ export class SongsComponent implements OnInit {
     this.selected.set(s);
     this.editing.set(false);
     this.draft = { ...s };
+  }
+
+  clearSelection() {
+    if (this.editing() && !confirm('Отменить несохранённые изменения?')) return;
+    this.selected.set(null);
+    this.editing.set(false);
   }
 
   newSong() {

@@ -10,10 +10,11 @@ import { Setlist } from '../../core/models';
   imports: [CommonModule, FormsModule],
   styleUrls: ['../../shared/split-page.css'],
   template: `
-    <div class="split-page">
+    <div class="split-page" [class.has-selection]="!!selected()">
       <section class="main-pane">
         <ng-container *ngIf="selected() as s; else emptyTpl">
           <div class="toolbar">
+            <button type="button" class="mobile-back secondary" (click)="clearSelection()">← Список</button>
             <button *ngIf="!editing()" (click)="startEdit()">Редактировать</button>
             <button *ngIf="editing()" (click)="save()">Сохранить</button>
             <button *ngIf="editing()" class="secondary" (click)="cancelEdit()">Отмена</button>
@@ -25,11 +26,16 @@ import { Setlist } from '../../core/models';
               <input [(ngModel)]="draft.name" [disabled]="!editing()">
             </label>
           </div>
-          <textarea *ngIf="editing()" class="body-editor" [(ngModel)]="draft.body"></textarea>
-          <pre *ngIf="!editing()" class="body-view">{{ s.body }}</pre>
+          <div class="body-area">
+            <textarea *ngIf="editing()" class="body-editor" [(ngModel)]="draft.body"></textarea>
+            <pre *ngIf="!editing()" class="body-view">{{ s.body }}</pre>
+          </div>
         </ng-container>
         <ng-template #emptyTpl>
-          <div class="empty">Выберите сет-лист или создайте новый →</div>
+          <div class="empty">
+            <span class="empty-hint-desktop">Выберите сет-лист или создайте новый →</span>
+            <span class="empty-hint-mobile">Выберите сет-лист из списка</span>
+          </div>
         </ng-template>
       </section>
 
@@ -77,6 +83,12 @@ export class SetlistsComponent implements OnInit {
     this.selected.set(s);
     this.editing.set(false);
     this.draft = { ...s };
+  }
+
+  clearSelection() {
+    if (this.editing() && !confirm('Отменить несохранённые изменения?')) return;
+    this.selected.set(null);
+    this.editing.set(false);
   }
 
   newItem() {

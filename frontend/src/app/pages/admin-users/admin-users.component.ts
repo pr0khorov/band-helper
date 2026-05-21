@@ -13,21 +13,21 @@ import { AppUser } from '../../core/models';
       <h2>Пользователи</h2>
 
       <div class="block">
-        <table>
+        <table class="responsive-table">
           <thead>
             <tr><th>Логин</th><th>Роль</th><th>Создан</th><th></th></tr>
           </thead>
           <tbody>
             <tr *ngFor="let u of users()">
-              <td>{{ u.username }}</td>
-              <td>
+              <td data-label="Логин">{{ u.username }}</td>
+              <td data-label="Роль">
                 <select [ngModel]="u.role" (ngModelChange)="changeRole(u, $event)">
                   <option value="USER">USER</option>
                   <option value="ADMIN">ADMIN</option>
                 </select>
               </td>
-              <td>{{ u.createdAt | date:'yyyy-MM-dd HH:mm' }}</td>
-              <td style="display:flex;gap:6px;justify-content:flex-end">
+              <td data-label="Создан">{{ u.createdAt | date:'yyyy-MM-dd HH:mm' }}</td>
+              <td class="actions-cell" data-label="">
                 <button class="secondary" (click)="resetPassword(u)">Сменить пароль</button>
                 <button class="danger" (click)="remove(u)">Удалить</button>
               </td>
@@ -65,16 +65,28 @@ import { AppUser } from '../../core/models';
     </div>
   `,
   styles: [`
-    .page { padding: 20px; overflow: auto; height: 100%; }
-    h2 { margin-top: 0; color: var(--accent); }
-    h3 { margin-top: 24px; }
+    .page { padding: 20px; overflow: auto; height: 100%; min-width: 0; }
+    h2 { margin-top: 0; color: var(--accent); font-size: 1.25rem; }
+    h3 { margin-top: 24px; font-size: 1rem; }
     .block { background: var(--panel); border: 1px solid var(--border); border-radius: 6px; padding: 12px; }
     .create-form { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+    .create-form input, .create-form select { flex: 1; min-width: 140px; }
     .backup { display: flex; flex-direction: column; gap: 10px; }
     .upload { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+    .upload button { flex: 1; min-width: 160px; }
     .hint { font-size: 12px; color: var(--muted); }
     .error { color: var(--danger); font-size: 12px; }
     .ok { color: #6ec97a; font-size: 12px; }
+
+    @media (max-width: 768px) {
+      .page { padding: 12px; }
+      .create-form input, .create-form select { min-width: 100%; }
+      .create-form button { width: 100%; }
+      .upload { flex-direction: column; align-items: stretch; }
+      .upload label { font-size: 13px; }
+      .upload button { width: 100%; min-width: 0; }
+      .block > button { width: 100%; }
+    }
   `]
 })
 export class AdminUsersComponent implements OnInit {

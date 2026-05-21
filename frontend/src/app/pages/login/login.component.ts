@@ -26,22 +26,31 @@ import { AuthService } from '../../core/auth.service';
   styles: [`
     .login-wrap {
       display: flex; align-items: center; justify-content: center;
-      width: 100vw; height: 100vh; background: var(--bg);
+      width: 100%;
+      min-height: 100vh;
+      min-height: 100dvh;
+      padding: 16px;
+      padding-top: max(16px, env(safe-area-inset-top));
+      padding-bottom: max(16px, env(safe-area-inset-bottom));
+      background: var(--bg);
+      box-sizing: border-box;
     }
     .login-card {
       background: var(--panel);
       border: 1px solid var(--border);
       border-radius: 8px;
       padding: 24px;
-      width: 320px;
+      width: 100%;
+      max-width: 360px;
       display: flex;
       flex-direction: column;
       gap: 12px;
     }
     h1 { margin: 0 0 8px; color: var(--accent); font-size: 20px; }
     label { display: flex; flex-direction: column; gap: 4px; font-size: 12px; color: var(--muted); }
+    label input { width: 100%; }
     .error { color: var(--danger); font-size: 12px; }
-    button { padding: 10px; font-size: 14px; }
+    button { padding: 12px; font-size: 16px; width: 100%; }
   `]
 })
 export class LoginComponent {
