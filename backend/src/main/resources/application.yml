@@ -1,0 +1,41 @@
+server:
+  port: 8080
+
+spring:
+  datasource:
+    url: jdbc:h2:file:./data/bandinfo;AUTO_SERVER=TRUE
+    driver-class-name: org.h2.Driver
+    username: sa
+    password: ""
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.H2Dialect
+        format_sql: false
+    open-in-view: false
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+  servlet:
+    multipart:
+      max-file-size: 50MB
+      max-request-size: 50MB
+
+app:
+  jwt:
+    secret: "k34r3klrjsfer[90{j!33rr##414)fsfadf!#"
+    expiration-ms: 2592000000
+  backup:
+    dir: ./backups
+  cors:
+    allowed-origins: "http://localhost:4200"
+  seed:
+    admin-username: admin
+    admin-password: admin
+
+logging:
+  level:
+    org.springframework.security: INFO
