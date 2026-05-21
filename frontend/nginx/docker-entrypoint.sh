@@ -2,13 +2,15 @@
 set -eu
 
 : "${PORT:=8080}"
-: "${BACKEND_URL:?Set BACKEND_URL on the frontend service (public backend URL)}"
+: "${BACKEND_URL:?Set BACKEND_URL on the frontend service}"
 
-# Убрать кавычки/пробелы и хвостовой /
 BACKEND_URL=$(printf '%s' "$BACKEND_URL" | tr -d '"' | tr -d "'" | sed 's/[[:space:]]//g' | sed 's#/*$##')
 
-# nginx требует схему http:// или https://
+# Внутренняя сеть Railway: только http, не https
 case "$BACKEND_URL" in
+  *.railway.internal)
+    BACKEND_URL=$(echo "$BACKEND_URL" | sed 's|^https://|http://|')
+    ;;
   http://*|https://*) ;;
   *)
     BACKEND_URL="https://${BACKEND_URL}"
