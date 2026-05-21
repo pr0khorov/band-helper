@@ -164,7 +164,7 @@ import { Rehearsal } from '../../core/models';
       width: 100%;
       min-width: 0;
       min-height: 88px;
-      cursor: default;
+      cursor: pointer;
       overflow: hidden;
     }
     .day-cell-fill.has-event {
@@ -241,9 +241,7 @@ import { Rehearsal } from '../../core/models';
     }
     ::ng-deep .cal-month-view .cal-header .cal-cell { color: var(--muted); }
     ::ng-deep .cal-month-view .cal-day-cell.cal-today { background: #2a3a4a; }
-    ::ng-deep .cal-month-view .cal-day-cell:not(.cal-has-events) { cursor: default; }
-    ::ng-deep .cal-month-view .cal-day-cell.cal-has-events { cursor: pointer; }
-    .day-cell-fill:not(.has-event) { pointer-events: none; }
+    ::ng-deep .cal-month-view .cal-day-cell { cursor: pointer; }
 
     @media (max-width: 768px) {
       .page { padding: 12px; }
@@ -380,9 +378,12 @@ export class RehearsalsComponent implements OnInit {
   prev() { this.viewDate = addMonths(this.viewDate, -1); }
   next() { this.viewDate = addMonths(this.viewDate, 1); }
 
-  onDayClick(day: { events: CalendarEvent[] }) {
-    if (!day.events.length) return;
-    this.openEdit(day.events[0]);
+  onDayClick(day: { date: Date; events: CalendarEvent[] }) {
+    if (day.events.length) {
+      this.openEdit(day.events[0]);
+      return;
+    }
+    this.openCreateOnDate(day.date);
   }
 
   eventTimeStart(event: CalendarEvent): string {

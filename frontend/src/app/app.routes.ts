@@ -9,7 +9,7 @@ export const routes: Routes = [
     canActivate: [authGuard],
     loadComponent: () => import('./layout/main-layout.component').then(m => m.MainLayoutComponent),
     children: [
-      { path: '', pathMatch: 'full', redirectTo: 'songs' },
+      { path: '', pathMatch: 'full', redirectTo: 'rehearsals' },
       { path: 'rehearsals', loadComponent: () => import('./pages/rehearsals/rehearsals.component').then(m => m.RehearsalsComponent) },
       { path: 'songs', loadComponent: () => import('./pages/songs/songs.component').then(m => m.SongsComponent) },
       { path: 'setlists', loadComponent: () => import('./pages/setlists/setlists.component').then(m => m.SetlistsComponent) },
