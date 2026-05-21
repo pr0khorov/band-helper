@@ -1,3 +1,4 @@
+# Используйте с пустым Root Directory (корень репо). Не сочетайте с Root Directory = backend.
 [build]
 builder = "DOCKERFILE"
 dockerfilePath = "Dockerfile"

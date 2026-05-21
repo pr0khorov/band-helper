@@ -1,4 +1,3 @@
-# Используйте с Root Directory = /backend и Config file path = /backend/railway.toml
 [build]
 builder = "DOCKERFILE"
 dockerfilePath = "Dockerfile"
