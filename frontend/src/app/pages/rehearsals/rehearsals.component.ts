@@ -1,7 +1,7 @@
 import { Component, OnInit, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { CalendarEvent, CalendarModule, CalendarView, CalendarMonthViewBeforeRenderEvent } from 'angular-calendar';
+import { CalendarEvent, CalendarModule, CalendarView } from 'angular-calendar';
 import { addMonths, parseISO, format } from 'date-fns';
 import { ApiService } from '../../core/api.service';
 import { Rehearsal } from '../../core/models';
@@ -21,13 +21,26 @@ import { Rehearsal } from '../../core/models';
         <button (click)="openCreate()">+ Новая репетиция</button>
       </div>
 
-      <mwl-calendar-month-view
-        [viewDate]="viewDate"
-        [events]="events()"
-        (beforeViewRender)="beforeViewRender($event)"
-        (dayClicked)="onDayClick($event.day.date)"
-        (eventClicked)="openEdit($any($event).event)">
-      </mwl-calendar-month-view>
+      <ng-template #cellTpl let-day="day">
+        <div class="day-cell-fill" [class.has-event]="day.events.length > 0" (click)="onDayClick(day.date)">
+          <div class="cal-cell-top">
+            <span class="cal-day-number">{{ day.date | date:'d' }}</span>
+          </div>
+          <div class="events-inside" *ngIf="day.events.length">
+            <div class="event-line" *ngFor="let e of day.events" (click)="openEdit(e); $event.stopPropagation()">
+              {{ e.title }}
+            </div>
+          </div>
+        </div>
+      </ng-template>
+
+      <div class="calendar-wrap">
+        <mwl-calendar-month-view
+          [viewDate]="viewDate"
+          [events]="events()"
+          [cellTemplate]="cellTpl">
+        </mwl-calendar-month-view>
+      </div>
 
       <div class="modal-backdrop" *ngIf="editing()" (click)="cancel()">
         <div class="modal" (click)="$event.stopPropagation()">
@@ -57,8 +70,9 @@ import { Rehearsal } from '../../core/models';
     </div>
   `,
   styles: [`
-    .page { padding: 16px 20px; display: flex; flex-direction: column; height: 100%; overflow: auto; }
-    .toolbar { display: flex; gap: 8px; align-items: center; margin-bottom: 12px; }
+    .page { padding: 16px 20px; display: flex; flex-direction: column; height: 100%; overflow: auto; min-width: 0; }
+    .toolbar { display: flex; gap: 8px; align-items: center; margin-bottom: 12px; flex-wrap: wrap; }
+    .calendar-wrap { flex: 1; min-width: 0; width: 100%; }
     .title { font-weight: 500; min-width: 160px; text-transform: capitalize; }
     .modal-backdrop {
       position: fixed; inset: 0; background: rgba(0,0,0,0.5);
@@ -71,37 +85,96 @@ import { Rehearsal } from '../../core/models';
     .modal h3 { margin: 0 0 8px; color: var(--accent); }
     .modal label { display: flex; flex-direction: column; gap: 4px; font-size: 12px; color: var(--muted); }
     .actions { display: flex; gap: 8px; margin-top: 8px; }
-    /* angular-calendar dark tweaks — events must be very visible */
-    ::ng-deep .cal-month-view { background: var(--panel); border: 1px solid var(--border); border-radius: 4px; }
-    ::ng-deep .cal-month-view .cal-cell-top { color: var(--text); }
-    ::ng-deep .cal-month-view .cal-day-cell { min-height: 90px; position: relative; }
+
+    /* --- day cell custom template --- */
+    .day-cell-fill {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      width: 100%;
+      min-width: 0;
+      min-height: 88px;
+      cursor: pointer;
+      overflow: hidden;
+    }
+    .day-cell-fill.has-event {
+      background: linear-gradient(135deg, #1a3147 0%, #1e3a52 100%);
+      box-shadow: inset 0 0 0 1px #2a5a7a;
+    }
+    .cal-cell-top {
+      display: flex;
+      justify-content: flex-end;
+      padding: 4px 6px 2px;
+    }
+    .cal-day-number {
+      font-size: 14px;
+      font-weight: 700;
+      opacity: 0.85;
+    }
+    .events-inside {
+      flex: 1;
+      min-width: 0;
+      padding: 0 4px 4px;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      overflow: hidden;
+    }
+    .event-line {
+      font-size: 11px;
+      line-height: 1.3;
+      color: #b8d8ff;
+      background: rgba(77, 163, 255, 0.25);
+      border-radius: 3px;
+      padding: 2px 4px;
+      min-width: 0;
+      max-width: 100%;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      cursor: pointer;
+    }
+    .event-line:hover {
+      background: rgba(77, 163, 255, 0.45);
+    }
+
+    /* --- angular-calendar global overrides --- */
+    ::ng-deep .calendar-wrap .cal-month-view {
+      width: 100%;
+      max-width: 100%;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+    }
+    ::ng-deep .cal-month-view .cal-days,
+    ::ng-deep .cal-month-view .cal-cell-row {
+      width: 100%;
+      min-width: 0;
+    }
+    ::ng-deep .cal-month-view .cal-cell {
+      float: none;
+      flex: 1 1 0;
+      min-width: 0;
+      overflow: hidden;
+    }
+    ::ng-deep .cal-month-view .cal-day-cell {
+      min-height: 90px;
+      min-width: 0;
+      overflow: hidden;
+    }
+    ::ng-deep .cal-month-view .cal-cell-top {
+      min-height: 0;
+      flex: none;
+    }
     ::ng-deep .cal-month-view .cal-header .cal-cell { color: var(--muted); }
     ::ng-deep .cal-month-view .cal-day-cell.cal-today { background: #2a3a4a; }
-    /* day cells with events — bright left border */
-    ::ng-deep .cal-month-view .cal-day-cell.has-events { background: #1e2a33; }
-    /* event badge dot — bigger, brighter */
-    ::ng-deep .cal-month-view .cal-event {
-      width: 8px !important;
-      height: 8px !important;
-      border-radius: 50%;
-      display: inline-block;
-      margin-right: 4px;
+
+    @media (max-width: 900px) {
+      .day-cell-fill { min-height: 72px; }
+      ::ng-deep .cal-month-view .cal-day-cell { min-height: 74px; }
+      .cal-day-number { font-size: 12px; }
+      .event-line { font-size: 10px; padding: 1px 3px; }
     }
-    /* event list inside a day cell */
-    ::ng-deep .cal-month-view .cal-events {
-      margin: 2px 0;
-      display: flex;
-      flex-wrap: wrap;
-      align-items: center;
-    }
-    /* individual event title in month view */
-    ::ng-deep .cal-month-view .cal-event-title {
-      font-size: 11px;
-      font-weight: 600;
-      color: #7cbfff;
-      line-height: 1.3;
-    }
-    /* day number badge */
     ::ng-deep .cal-month-view .cal-day-badge {
       background: var(--accent) !important;
       color: #fff !important;
@@ -109,15 +182,6 @@ import { Rehearsal } from '../../core/models';
       font-size: 11px;
       padding: 2px 6px;
       border-radius: 10px;
-    }
-    /* today cell number */
-    ::ng-deep .cal-month-view .cal-day-cell.cal-today .cal-cell-top {
-      background: transparent;
-    }
-    ::ng-deep .cal-month-view .cal-day-number {
-      font-size: 14px;
-      font-weight: 600;
-      opacity: 0.85;
     }
   `]
 })
@@ -135,17 +199,6 @@ export class RehearsalsComponent implements OnInit {
       color: { primary: '#4da3ff', secondary: '#4da3ff44' }
     } as CalendarEvent))
   );
-
-  beforeViewRender(event: CalendarMonthViewBeforeRenderEvent) {
-    const eventDates = new Set(this.events().map(e =>
-      format(e.start, 'yyyy-MM-dd')
-    ));
-    for (const day of event.body) {
-      if (eventDates.has(format(day.date, 'yyyy-MM-dd'))) {
-        day.cssClass = 'has-events';
-      }
-    }
-  }
 
   editing = signal(false);
   draft: Rehearsal = { date: format(new Date(), 'yyyy-MM-dd'), startTime: '', endTime: '', goals: '' };
